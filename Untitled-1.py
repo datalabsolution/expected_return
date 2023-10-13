@@ -8,14 +8,14 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 
-API = api_key = st.secrets["API_KEY"]
+api_key = st.secrets["API_KEY"]
 # Function to check if a date is the third Friday of the month
 def is_third_friday(date):
     return date.weekday() == 4 and 15 <= date.day <= 21
 
 # Initialize
 today = datetime.date.today()
-client = RESTClient(API)
+client = RESTClient(api_key)
 option_num = 20
 
 # Streamlit UI
