@@ -3,3 +3,4 @@ pandas==1.5.3
 polygon==1.1.2
 streamlit==1.27.2
 yfinance==0.2.14
+polygon-api-client==0.1.9
