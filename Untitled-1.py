@@ -15,12 +15,18 @@ def is_third_friday(date):
 
 # Initialize
 today = datetime.date.today()
-client = RESTClient("AI73Oy1KnUYUfHAKsOJLxSmVz9dWFC95")
+client = RESTClient('AI73Oy1KnUYUfHAKsOJLxSmVz9dWFC95')
 option_num = 20
 
+sheet_id ="1--_yA87vC8YgxiwgQ_dR_SbWlIDUl9yf"
+tickers_data = pd.read_csv(f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv")
+tickers = tickers_data["Ticker"].to_list()
+
 # Streamlit UI
-st.title('Expected Move')
-stock_code = st.sidebar.text_input("Enter the stock code:", value="AAPL")
+stock_code = st.sidebar.selectbox(f'選擇股票:', tickers)
+
+company_name = tickers_data["Company"][tickers_data["Ticker"] == stock_code].values[0]
+st.title(f"{company_name} 預期走勢 (Expected Move)")
 option_num = st.sidebar.slider("Select the number of expiry dates:", 1, 30, 10)
 ticker = yf.Ticker(stock_code)
 option_dates = ticker.options
@@ -30,7 +36,7 @@ closest_ten_dates = option_dates[:option_num]
 current_price = round(yf.download(stock_code, period='1d')['Adj Close'].values[-1], 2)
 
 table_data = []
-
+error_log = []
 # Loop through each option date
 for option_date in closest_ten_dates:
     option_date_bw = datetime.datetime.strptime(option_date, '%Y-%m-%d').date()
@@ -62,14 +68,14 @@ for option_date in closest_ten_dates:
             round(expected_return_lower, 2), round(expected_move, 2)
         ])
     except Exception as e:
-        st.write(f"{option_date} no IV data")
+        error_log.append(f"{option_date} no IV data")
         continue
 
 # Create DataFrame and display table
 df_columns = ['Expiry Date', 'Days', 'Strike', 'Mean_IV', 'Upper', 'Current', 'Lower', 'Expected Move']
 df = pd.DataFrame(table_data, columns=df_columns)
 df = round(df, 3)
-st.table(df)
+
 
 plt.figure(figsize=(12, 6))
 plt.plot(df['Expiry Date'], df['Upper'], label='Upper', marker='o')
@@ -86,3 +92,6 @@ plt.xticks(rotation=45, fontsize=10)
 
 # Display the plot in Streamlit
 st.pyplot(plt)
+
+st.table(df)
+st.text(f"Remark: {error_log}")
